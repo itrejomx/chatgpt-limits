@@ -27,11 +27,13 @@ This plugin intentionally reuses that code instead of screen-scraping or browser
 
 - Tool: `chatgpt_limits`
 - Slash command: `/chatgpt-limits`
+- Shortcut slash command: `/gptusage`
 - CLI subcommand: `hermes chatgpt-limits`
 - Bundled skill: `chatgpt-limits:chatgpt-limits`
 - Works from CLI and gateway chats because the command runs on the Hermes host and uses local OAuth state
 - Can still fetch ChatGPT/Codex limits even when the active conversation provider is different
 - JSON mode for automation or debugging
+- Prettier slash-command output for gateway chats like Telegram
 
 ### Requirements
 
@@ -77,6 +79,10 @@ hermes login --provider openai-codex
 
 ```text
 /chatgpt-limits
+```
+
+```text
+/gptusage
 ```
 
 #### CLI command
@@ -155,6 +161,8 @@ Yes, this can work over Telegram or other Hermes channels.
 
 Reason: the slash command runs on the machine hosting Hermes, not on the messaging client. So it can read that Hermes instance's local OAuth state and query the same backend usage endpoint.
 
+The slash-command response is also formatted more compactly for chat/gateway use, while `hermes chatgpt-limits` keeps the CLI-oriented terminal output.
+
 ### Troubleshooting
 
 If the command does not show limits:
@@ -203,11 +211,13 @@ Este plugin reutiliza intencionalmente ese código en lugar de hacer scraping de
 
 - Herramienta: `chatgpt_limits`
 - Slash command: `/chatgpt-limits`
+- Slash command corto: `/gptusage`
 - Subcomando CLI: `hermes chatgpt-limits`
 - Skill incluida: `chatgpt-limits:chatgpt-limits`
 - Funciona desde CLI y desde chats por gateway porque el comando se ejecuta en el host de Hermes y usa el estado OAuth local
 - Puede consultar límites de ChatGPT/Codex aunque el proveedor activo de la conversación sea otro
 - Modo JSON para automatización o depuración
+- Salida más compacta para slash commands en gateways como Telegram
 
 ### Requisitos
 
@@ -253,6 +263,10 @@ hermes login --provider openai-codex
 
 ```text
 /chatgpt-limits
+```
+
+```text
+/gptusage
 ```
 
 #### Comando CLI
@@ -330,6 +344,8 @@ Weekly: 97% remaining (3% used) • resets in 5d 5h (2026-05-23 19:26 MST)
 Sí, esto puede funcionar por Telegram u otros canales de Hermes.
 
 La razón es que el slash command corre en la máquina que hospeda Hermes, no en el cliente de mensajería. Por eso puede leer el estado OAuth local de esa instancia de Hermes y consultar el mismo endpoint backend de usage.
+
+Además, la respuesta del slash command ahora se formatea de manera más compacta para chat/gateway, mientras que `hermes chatgpt-limits` mantiene la salida orientada a terminal.
 
 ### Solución de problemas
 

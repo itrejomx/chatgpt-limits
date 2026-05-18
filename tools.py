@@ -21,6 +21,7 @@ def _normalize_provider(raw: Any) -> str:
 def _snapshot_to_dict(snapshot: Any, *, markdown: bool = False) -> dict[str, Any]:
     account_usage = importlib.import_module("agent.account_usage")
     render_account_usage_lines = getattr(account_usage, "render_account_usage_lines")
+    format_reset = getattr(account_usage, "_format_reset")
 
     if snapshot is None:
         return {
@@ -38,6 +39,7 @@ def _snapshot_to_dict(snapshot: Any, *, markdown: bool = False) -> dict[str, Any
                 "label": getattr(window, "label", None),
                 "used_percent": getattr(window, "used_percent", None),
                 "reset_at": reset_at.isoformat() if reset_at else None,
+                "reset_human": format_reset(reset_at) if reset_at else None,
                 "detail": getattr(window, "detail", None),
             }
         )

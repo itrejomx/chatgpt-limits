@@ -12,10 +12,12 @@ _PLUGIN_DIR = Path(__file__).parent
 _HELP = (
     "Usage:\n"
     "  /chatgpt-limits           Show ChatGPT/Codex account limits\n"
+    "  /gptusage                 Shortcut alias for /chatgpt-limits\n"
     "  /chatgpt-limits json      Return raw JSON\n"
     "  /chatgpt-limits <name>    Inspect another provider supported by Hermes account_usage\n\n"
     "Examples:\n"
     "  /chatgpt-limits\n"
+    "  /gptusage\n"
     "  /chatgpt-limits json\n"
     "  /chatgpt-limits anthropic\n\n"
     "CLI:\n"
@@ -33,7 +35,59 @@ def _resolve_request(arg: str, *, json_flag: bool = False) -> tuple[str, bool]:
     return provider, bool(json_flag)
 
 
-def _render_result(raw_result: str, *, as_json: bool = False) -> str:
+def _format_window_chat(window: dict) -> str:
+    label = str(window.get("label") or "Window")
+    used_raw = window.get("used_percent")
+    detail = str(window.get("detail") or "").strip()
+    reset_human = str(window.get("reset_human") or "").strip()
+
+    lines = [f"• {label}"]
+    if used_raw is None:
+        lines.append("  unavailable")
+    else:
+        used = max(0, round(float(used_raw)))
+        remaining = max(0, round(100 - float(used_raw)))
+        lines.append(f"  {remaining}% remaining ({used}% used)")
+
+    if reset_human:
+        lines.append(f"  resets: {reset_human}")
+    elif detail:
+        lines.append(f"  {detail}")
+    return "\n".join(lines)
+
+
+def _render_chat_payload(payload: dict) -> str:
+    title = payload.get("title") or "Account limits"
+    provider = payload.get("provider") or "unknown"
+    plan = payload.get("plan")
+
+    parts = [f"📈 **{title}**"]
+    parts.append(f"Provider: {provider} ({plan})" if plan else f"Provider: {provider}")
+
+    windows = payload.get("windows") or []
+    if windows:
+        parts.append("")
+        parts.extend(_format_window_chat(window) for window in windows)
+
+    details = [str(item).strip() for item in (payload.get("details") or []) if str(item).strip()]
+    if details:
+        parts.append("")
+        parts.extend(f"• {detail}" for detail in details)
+
+    unavailable_reason = payload.get("unavailable_reason")
+    if unavailable_reason:
+        parts.append("")
+        parts.append(f"Unavailable: {unavailable_reason}")
+
+    hint = payload.get("hint")
+    if hint and not windows:
+        parts.append("")
+        parts.append(f"Hint: {hint}")
+
+    return "\n".join(parts)
+
+
+def _render_result(raw_result: str, *, as_json: bool = False, chat_friendly: bool = False) -> str:
     try:
         payload = json.loads(raw_result)
     except Exception:
@@ -41,6 +95,9 @@ def _render_result(raw_result: str, *, as_json: bool = False) -> str:
 
     if as_json:
         return json.dumps(payload, indent=2, sort_keys=True)
+
+    if chat_friendly and payload.get("available"):
+        return _render_chat_payload(payload)
 
     lines = payload.get("lines") or []
     if lines:
@@ -63,6 +120,7 @@ def _handle_slash(raw_args: str) -> str:
     return _render_result(
         tools.chatgpt_limits({"provider": provider, "markdown": True}),
         as_json=as_json,
+        chat_friendly=not as_json,
     )
 
 
@@ -104,6 +162,12 @@ def register(ctx) -> None:
         "chatgpt-limits",
         handler=_handle_slash,
         description="Show ChatGPT/OpenAI Codex account limits from local OAuth.",
+        args_hint="[json|provider]",
+    )
+    ctx.register_command(
+        "gptusage",
+        handler=_handle_slash,
+        description="Shortcut alias for /chatgpt-limits.",
         args_hint="[json|provider]",
     )
     ctx.register_cli_command(
