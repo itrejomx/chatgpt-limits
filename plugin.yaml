@@ -1,0 +1,6 @@
+name: chatgpt-limits
+version: 0.1.0
+description: Show ChatGPT/OpenAI Codex account limits from the local Hermes OAuth session.
+provides_tools:
+  - chatgpt_limits
+provides_hooks: []
